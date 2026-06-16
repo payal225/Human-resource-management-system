@@ -12,7 +12,7 @@ export default function AttendancePage() {
       }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+      
         <div
           className="rounded-2xl shadow-lg p-6 mb-8"
           style={{ backgroundColor: "var(--card)" }}
@@ -26,7 +26,7 @@ export default function AttendancePage() {
           </p>
         </div>
 
-        {/* Stats */}
+        
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <div className="bg-green-500 text-white p-6 rounded-xl shadow-lg">
             <h2 className="text-lg">Present Today</h2>
@@ -44,7 +44,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {/* Attendance Table */}
+       
         <div
           className="rounded-2xl shadow-lg overflow-hidden"
           style={{
@@ -92,11 +92,8 @@ export default function AttendancePage() {
           </table>
         </div>
 
-        {/* Actions */}
         <div className="mt-8 flex justify-center gap-4">
-          <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
-            Export Report
-          </button>
+          
 
           <Link
             href="/"

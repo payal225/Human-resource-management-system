@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 type User = {
   id: number;
@@ -12,15 +12,20 @@ type User = {
 export default function EmployeesPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
+  
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await fetch('https://dummyjson.com/users');
+        const response = await fetch("https://dummyjson.com/users");
         const data = await response.json();
         setUsers(data.users);
       } catch (error) {
-        console.error('Failed to fetch users:', error);
+        console.error("Failed to fetch users:", error);
       } finally {
         setLoading(false);
       }
@@ -29,19 +34,29 @@ export default function EmployeesPage() {
     fetchUsers();
   }, []);
 
+ 
+  useEffect(() => {
+    searchRef.current?.focus();
+  }, []);
+
+  
+  const filteredUsers = users.filter((user) =>
+    user.firstName.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div
       className="min-h-screen p-6"
       style={{
-        backgroundColor: 'var(--background)',
-        color: 'var(--foreground)',
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
       }}
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div
           className="rounded-2xl shadow-lg p-6 mb-8 text-center"
-          style={{ backgroundColor: 'var(--card)' }}
+          style={{ backgroundColor: "var(--card)" }}
         >
           <h1 className="text-4xl font-bold">Employees Directory</h1>
           <p className="mt-2 opacity-70">
@@ -49,20 +64,34 @@ export default function EmployeesPage() {
           </p>
         </div>
 
+        {/* Search Input */}
+        <div className="mb-6">
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Search employee by name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </div>
+
         {loading ? (
           <p className="text-center text-lg">Loading employees...</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <div
                 key={user.id}
                 className="rounded-xl shadow-md p-6"
                 style={{
-                  backgroundColor: 'var(--card)',
-                  border: '1px solid var(--border)',
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                 }}
               >
-                <h2 className="text-xl font-semibold">{user.firstName}</h2>
+                <h2 className="text-xl font-semibold">
+                  {user.firstName}
+                </h2>
 
                 <p className="mt-2 opacity-75 break-all">
                   {user.email}
