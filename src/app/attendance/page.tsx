@@ -1,8 +1,72 @@
-import Link from "next/link";
-import { attendanceData, type AttendanceRecord } from "@/app/data/attendance";
+"use client";
 
+import Link from "next/link";
+import {
+  attendanceData,
+  type AttendanceRecord,
+} from "@/app/data/attendance";
+
+import { AgGridReact } from "ag-grid-react";
+import {
+  ModuleRegistry,
+  AllCommunityModule,
+  type ColDef,
+} from "ag-grid-community";
+
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+
+// Register AG Grid modules
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const columnDefs: ColDef<AttendanceRecord>[] = [
+  {
+    headerName: "Employee ID",
+    field: "id",
+    valueFormatter: (params) => `EMP${params.value}`,
+  },
+  {
+    headerName: "Employee",
+    field: "employeeName",
+  },
+  {
+    headerName: "Department",
+    field: "department",
+  },
+  {
+    headerName: "Check In",
+    field: "CheckIn",
+  },
+  {
+    headerName: "Status",
+    field: "status",
+    cellRenderer: (params: { value: string }) => (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+          params.value === "Present"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
+        }`}
+      >
+        {params.value}
+      </span>
+    ),
+  },
+];
 
 export default function AttendancePage() {
+  const presentCount = attendanceData.filter(
+    (emp) => emp.status === "Present"
+  ).length;
+
+  const absentCount = attendanceData.filter(
+    (emp) => emp.status === "Absent"
+  ).length;
+
+  const attendanceRate = Math.round(
+    (presentCount / attendanceData.length) * 100
+  );
+
   return (
     <div
       className="min-h-screen p-6"
@@ -11,11 +75,13 @@ export default function AttendancePage() {
         color: "var(--foreground)",
       }}
     >
-      <div className="max-w-6xl mx-auto">
-      
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div
           className="rounded-2xl shadow-lg p-6 mb-8"
-          style={{ backgroundColor: "var(--card)" }}
+          style={{
+            backgroundColor: "var(--card)",
+          }}
         >
           <h1 className="text-4xl font-bold text-center">
             Attendance Management
@@ -26,78 +92,52 @@ export default function AttendancePage() {
           </p>
         </div>
 
-        
+        {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-green-500 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-green-500 text-white rounded-xl p-6 shadow-lg">
             <h2 className="text-lg">Present Today</h2>
-            <p className="text-3xl font-bold">3</p>
+            <p className="text-3xl font-bold">{presentCount}</p>
           </div>
 
-          <div className="bg-red-500 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-red-500 text-white rounded-xl p-6 shadow-lg">
             <h2 className="text-lg">Absent Today</h2>
-            <p className="text-3xl font-bold">1</p>
+            <p className="text-3xl font-bold">{absentCount}</p>
           </div>
 
-          <div className="bg-blue-500 text-white p-6 rounded-xl shadow-lg">
+          <div className="bg-blue-500 text-white rounded-xl p-6 shadow-lg">
             <h2 className="text-lg">Attendance Rate</h2>
-            <p className="text-3xl font-bold">75%</p>
+            <p className="text-3xl font-bold">{attendanceRate}%</p>
           </div>
         </div>
 
-       
+        {/* AG Grid */}
         <div
-          className="rounded-2xl shadow-lg overflow-hidden"
+          className="ag-theme-alpine rounded-xl overflow-hidden shadow-lg"
           style={{
-            backgroundColor: "var(--card)",
-            border: "1px solid var(--border)",
+            height: 500,
+            width: "100%",
           }}
         >
-          <table className="w-full">
-            <thead className="bg-gray-800 text-white">
-              <tr>
-                <th className="p-4 text-left">Employee ID</th>
-                <th className="p-4 text-left">Employee</th>
-                <th className="p-4 text-left">Department</th>
-                <th className="p-4 text-left">Check In</th>
-                <th className="p-4 text-left">Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {attendanceData.map((employee: AttendanceRecord) => (
-                <tr
-                  key={employee.id}
-                  style={{
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <td className="p-4">EMP{employee.id}</td>
-                  <td className="p-4">{employee.employeeName}</td>
-                  <td className="p-4">{employee.department}</td>
-                  <td className="p-4">{employee.CheckIn}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        employee.status === "Present"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {employee.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AgGridReact<AttendanceRecord>
+            theme="legacy"
+            rowData={attendanceData}
+            columnDefs={columnDefs}
+            pagination
+            paginationPageSize={10}
+            defaultColDef={{
+              sortable: true,
+              filter: true,
+              resizable: true,
+              flex: 1,
+            }}
+          />
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
-          
-
+        {/* Back Button */}
+        <div className="mt-8 flex justify-center">
           <Link
             href="/"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition"
           >
             ← Back to Dashboard
           </Link>
