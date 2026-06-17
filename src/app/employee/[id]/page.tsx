@@ -3,6 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+
 type User = {
   id: number;
   firstName: string;
@@ -12,6 +20,17 @@ type User = {
   gender: string;
   phone: string;
   role: string;
+  address: {
+    address: string;
+    city: string;
+    state: string;
+    stateCode: string;
+    postalCode: number;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
 };
 
 export default function EmployeePage() {
@@ -20,11 +39,10 @@ export default function EmployeePage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
-    if (!id) {
-      return;
-    }
+    if (!id) return;
 
     const fetchUser = async () => {
       try {
@@ -51,7 +69,7 @@ export default function EmployeePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
+      <div className="min-h-screen flex items-center justify-center">
         Loading employee details...
       </div>
     );
@@ -59,71 +77,80 @@ export default function EmployeePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
+      <div className="min-h-screen flex items-center justify-center">
         Employee not found.
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen p-6"
-      style={{
-        backgroundColor: 'var(--background)',
-        color: 'var(--foreground)',
-      }}
-    >
-      <div className="max-w-2xl mx-auto">
-        <div
-          className="rounded-2xl shadow-lg p-6 mb-8"
-          style={{ backgroundColor: 'var(--card)' }}
-        >
-          <h1 className="text-4xl font-bold">Employee Details</h1>
-          <p className="mt-2 opacity-70">
-            View and manage employee information securely.
-          </p>
-        </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-3xl">
+            {user.firstName} {user.lastName}
+          </DialogTitle>
 
-        <div
-          className="rounded-2xl shadow-lg p-8"
-          style={{
-            backgroundColor: 'var(--card)',
-            border: '1px solid var(--border)',
-          }}
-        >
+          <DialogDescription>
+            Employee Details
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold">
-              {user.firstName} {user.lastName}
-            </h2>
-
-            <p className="mt-2 text-lg opacity-70">
+            <p className="text-lg text-muted-foreground">
               {user.role}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <p className="text-sm font-semibold opacity-70">Email</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Email
+              </p>
               <p>{user.email}</p>
             </div>
 
             <div>
-              <p className="text-sm font-semibold opacity-70">Age</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Age
+              </p>
               <p>{user.age}</p>
             </div>
 
             <div>
-              <p className="text-sm font-semibold opacity-70">Gender</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Gender
+              </p>
               <p>{user.gender}</p>
             </div>
 
             <div>
-              <p className="text-sm font-semibold opacity-70">Phone</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Phone
+              </p>
               <p>{user.phone}</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Address
+              </p>
+
+              <p>
+                {user.address.address}, {user.address.city},{' '}
+                {user.address.state} ({user.address.stateCode}) -{' '}
+                {user.address.postalCode}
+              </p>
+
+              <p className="text-sm text-muted-foreground mt-1">
+                Coordinates: {user.address.coordinates.lat},{' '}
+                {user.address.coordinates.lng}
+              </p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useReducer } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AgGridReact } from "ag-grid-react";
 import {
   ModuleRegistry,
@@ -12,7 +13,6 @@ import {
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-// Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 type Employee = {
@@ -99,35 +99,49 @@ function payrollReducer(
 export default function SalaryPage() {
   const [employees, dispatch] = useReducer(payrollReducer, []);
 
-  useEffect(() => {
-    async function fetchEmployees() {
-      try {
-        const response = await fetch("https://dummyjson.com/users");
-        const data = await response.json();
+  const {
+    data: employeesFromApi = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async (): Promise<Employee[]> => {
+      const response = await fetch("https://dummyjson.com/users");
 
-        const formattedEmployees: Employee[] = (
-          data.users as DummyUser[]
-        ).map((user) => ({
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.company.title,
-          baseSalary: user.id * 30000,
-          bonus: 0,
-          totalSalary: user.id * 30000,
-        }));
-
-        dispatch({
-          type: "LOAD_EMPLOYEES",
-          payload: formattedEmployees,
-        });
-      } catch (error) {
-        console.error(error);
+      if (!response.ok) {
+        throw new Error("Failed to fetch employees");
       }
-    }
 
-    fetchEmployees();
-  }, []);
+      const data = await response.json();
+
+      return (data.users as DummyUser[]).map((user) => ({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.company.title,
+        baseSalary: user.id * 30000,
+        bonus: 0,
+        totalSalary: user.id * 30000,
+      }));
+    },
+  });
+
+  useEffect(() => {
+    if (employeesFromApi.length > 0) {
+      dispatch({
+        type: "LOAD_EMPLOYEES",
+        payload: employeesFromApi,
+      });
+    }
+  }, [employeesFromApi]);
+
+  if (isLoading) {
+    return <div className="p-8">Loading employees...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8">Error loading employees.</div>;
+  }
 
   const columnDefs: ColDef<Employee>[] = [
     {
@@ -231,7 +245,7 @@ export default function SalaryPage() {
         </h1>
 
         <p className="mb-6 text-center opacity-70">
-          Manage employee salaries using useReducer and AG Grid.
+          Manage employee salaries using useReducer and TanStack Query.
         </p>
 
         <div
