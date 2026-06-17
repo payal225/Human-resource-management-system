@@ -19,7 +19,8 @@ A modern Human Resource Management System (HRMS) built with **Next.js**, **React
 * TypeScript
 * Tailwind CSS
 * shadcn/ui
-* Turbopack
+* Turbopack\
+* Ag grid
 
 ## Getting Started
 
