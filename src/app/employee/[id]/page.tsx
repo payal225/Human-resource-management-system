@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState} from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
 type User = {
   id: number;
@@ -75,9 +76,11 @@ export default function Page() {
             }}
           >
             <div className="flex items-center gap-6 mb-8">
-              <img
+              <Image
                 src={user.image}
                 alt={`${user.firstName} ${user.lastName}`}
+                width={128}
+                height={128}
                 className="w-32 h-32 rounded-full border-4"
               />
 
